@@ -1,4 +1,5 @@
 import nltk
+import sys
 
 def tagFrom(sentence):
 	tokens = nltk.word_tokenize(sentence)
@@ -51,14 +52,79 @@ def writeTo(fw, d_ngrams):
 
 def createPatDB(frn, fwn):
 	fr = open(frn, 'r')
+	d_ngrams = {}
+	while True:
+		ngram = fr.readline()
+		if not ngram: break
+		ngram = ngram.replace('\n', '')
+		t_ngram = [nltk.tag.str2tuple(t) for t in ngram.split()]
+		if not ngram in d_ngrams:
+			d_ngrams[ngram] = [1, t_ngram]
+		else:
+			d_ngrams[ngram][0] += 1
+	fr.close()
+	fw = open(fwn, 'a+')
+	writeTo(fw, d_ngrams)
+	fw.close()
+
+def writeNgramsTo(n, frn, fwn):
+	fr = open(frn, 'r')
 	fw = open(fwn, 'w')
 	while True:
 		sent = fr.readline()
 		if not sent: break
 		tagged = tagFrom(sent)
-		for i in range(2, 5):
-			ngrams = ngramsFrom(i, tagged)
-			d_ngrams = d_ngramsFrom(ngrams)
-			writeTo(fw, d_ngrams) 
+		ngrams = ngramsFrom(n, tagged)
+		s_ngrams = s_ngramsFrom(ngrams)
+		for s_ngram in s_ngrams:
+			data = s_ngram
+			data += '\n'
+			fw.write(data)
 	fr.close()
 	fw.close()
+
+if __name__ == '__main__':
+	if len(sys.argv) != 3:
+		print ('usage: analyzer.py <corpus name> <pattern db name>')
+		sys.exit()
+	frn = sys.argv[1]
+	fwn = sys.argv[2]
+	f = open(fwn, 'w+')
+	f.close()
+	for i in range(2, 5):
+		writeNgramsTo(i, frn, 'ngramdb')
+		createPatDB('ngramdb', fwn)
+	print ('complete to create pattern database')
+		
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
